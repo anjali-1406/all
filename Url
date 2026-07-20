@@ -1,0 +1,5 @@
+path(
+    "delete-account/",
+    views.DeleteAccountView.as_view(),
+    name="delete_account",
+),
