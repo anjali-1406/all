@@ -1,0 +1,202 @@
+/* =====================================================
+   HOME.CSS (PART 1/4)
+   Global + Layout + Sidebar + Stories
+===================================================== */
+
+/* Reset */
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial,Helvetica,sans-serif;
+}
+
+body{
+    background:#f0f2f5;
+    color:#050505;
+}
+
+/* ===========================
+   Main Layout
+=========================== */
+
+.main-layout{
+    display:flex;
+    justify-content:center;
+    align-items:flex-start;
+    gap:25px;
+    max-width:1400px;
+    margin:20px auto;
+    padding:0 20px;
+}
+
+/* ===========================
+   Left Sidebar
+=========================== */
+
+.left-sidebar{
+    width:250px;
+    background:#fff;
+    border-radius:12px;
+    padding:20px;
+    position:sticky;
+    top:20px;
+    box-shadow:0 2px 8px rgba(0,0,0,.08);
+}
+
+.left-sidebar h3{
+    margin-bottom:20px;
+    font-size:22px;
+    color:#111;
+}
+
+.left-sidebar a{
+    display:block;
+    text-decoration:none;
+    color:#222;
+    padding:12px;
+    border-radius:8px;
+    font-size:15px;
+    font-weight:600;
+    margin-bottom:8px;
+    transition:.2s;
+}
+
+.left-sidebar a:hover{
+    background:#f2f2f2;
+}
+
+.delete-account-btn{
+    width:100%;
+    margin-top:20px;
+    padding:12px;
+    border:none;
+    border-radius:8px;
+    background:#e41e3f;
+    color:#fff;
+    cursor:pointer;
+    font-size:15px;
+    font-weight:600;
+}
+
+.delete-account-btn:hover{
+    background:#c81937;
+}
+
+/* ===========================
+   Feed Container
+=========================== */
+
+.feed-container{
+    width:100%;
+    max-width:650px;
+}
+
+/* ===========================
+   Navigation Box
+=========================== */
+
+.nav-box{
+    background:#fff;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:15px 20px;
+    border-radius:12px;
+    margin-bottom:20px;
+    box-shadow:0 1px 4px rgba(0,0,0,.08);
+}
+
+.btn-secondary{
+    background:#1877f2;
+    color:#fff;
+    border:none;
+    padding:8px 18px;
+    border-radius:6px;
+    cursor:pointer;
+    font-weight:600;
+}
+
+.btn-secondary:hover{
+    background:#166fe5;
+}
+
+/* ===========================
+   Instagram Stories
+=========================== */
+
+.stories-container{
+    display:flex;
+    align-items:center;
+    gap:18px;
+    overflow-x:auto;
+    padding:18px;
+    background:#fff;
+    border-radius:12px;
+    margin-bottom:20px;
+    box-shadow:0 1px 4px rgba(0,0,0,.08);
+
+    scrollbar-width:none;
+    -ms-overflow-style:none;
+}
+
+.stories-container::-webkit-scrollbar{
+    display:none;
+}
+
+.story-item{
+    text-decoration:none;
+    text-align:center;
+    color:#111;
+    min-width:74px;
+    flex-shrink:0;
+}
+
+.story-circle{
+    width:68px;
+    height:68px;
+    border-radius:50%;
+    padding:3px;
+    background:linear-gradient(
+        45deg,
+        #feda75,
+        #fa7e1e,
+        #d62976,
+        #962fbf,
+        #4f5bd5
+    );
+
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    margin:auto;
+}
+
+.story-circle img{
+    width:100%;
+    height:100%;
+    border-radius:50%;
+    object-fit:cover;
+    border:2px solid #fff;
+}
+
+.story-item span{
+    display:block;
+    margin-top:8px;
+    font-size:12px;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+}
+
+.story-item.create-story .story-circle{
+    background:#fff;
+    border:2px solid #ddd;
+    color:#1877f2;
+    font-size:34px;
+    font-weight:bold;
+}
+
+.story-item.create-story span{
+    font-weight:600;
+}
