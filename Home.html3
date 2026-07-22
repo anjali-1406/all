@@ -1,0 +1,121 @@
+                        {% for comment in post.comments.all %}
+
+                            {% if not comment.parent %}
+
+                                {% include "posts/reply.html" with comment=comment post=post %}
+
+                            {% endif %}
+
+                        {% empty %}
+
+                            <p class="no-comments-fallback">
+                                No comments yet.
+                            </p>
+
+                        {% endfor %}
+
+                    </div>
+
+                    <!-- COMMENT FORM -->
+
+                    <div class="popup-footer">
+
+                        <form
+                            class="comment-form"
+                            action="{% url 'posts:add_comment' post.id %}"
+                            method="POST"
+                            data-post-id="{{ post.id }}">
+
+                            {% csrf_token %}
+
+                            <input
+                                type="text"
+                                name="text"
+                                placeholder="Write a comment..."
+                                autocomplete="off"
+                                required>
+
+                            <button type="submit">
+
+                                Post
+
+                            </button>
+
+                        </form>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        {% endfor %}
+
+    </main>
+
+</div>
+
+<!-- ================= CREATE STORY POPUP ================= -->
+
+<div
+    id="story-popup-modal"
+    class="comment-popup"
+    style="display:none;">
+
+    <div class="popup-content">
+
+        <div class="popup-header">
+
+            <h3>Create Story</h3>
+
+            <button
+                type="button"
+                id="close-story-popup">
+
+                ×
+
+            </button>
+
+        </div>
+
+        <form
+            id="ajax-story-form"
+            method="POST"
+            enctype="multipart/form-data"
+            action="{% url 'stories:ajax_story_create' %}">
+
+            {% csrf_token %}
+
+            <div class="popup-comments">
+
+                <label
+                    for="story-image-input"
+                    class="story-upload-label">
+
+                    <span class="story-upload-icon">
+
+                        📸
+
+                    </span>
+
+                    <span>
+
+                        Upload Story
+
+                    </span>
+
+                    <input
+                        type="file"
+                        id="story-image-input"
+                        name="image"
+                        accept="image/*"
+                        hidden
+                        required>
+
+                </label>
+
+                <div
+                    id="story-preview-box"
+                    style="display:none;">
