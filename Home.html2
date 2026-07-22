@@ -1,0 +1,209 @@
+        <!-- ================= POSTS ================= -->
+
+        {% for post in posts %}
+
+        <div class="feed-card post-card" data-post-id="{{ post.id }}">
+
+            <!-- POST HEADER -->
+
+            <div class="post-header">
+
+                <div style="display:flex;align-items:center;gap:10px;">
+
+                    <div class="post-avatar-container"
+                         style="width:40px;height:40px;border-radius:50%;overflow:hidden;background:#e4e6eb;display:flex;justify-content:center;align-items:center;flex-shrink:0;">
+
+                        {% if post.author.profile.profile_picture %}
+
+                            <img
+                                src="{{ post.author.profile.profile_picture.url }}"
+                                alt="{{ post.author.username }}"
+                                style="width:100%;height:100%;object-fit:cover;">
+
+                        {% else %}
+
+                            <span style="font-size:18px;">👤</span>
+
+                        {% endif %}
+
+                    </div>
+
+                    <div>
+
+                        <div class="post-author">
+
+                            {{ post.author.username }}
+
+                        </div>
+
+                        <div class="post-time">
+
+                            {{ post.created_at|timesince }} ago
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                {% if request.user != post.author %}
+
+                <button
+                    class="follow-btn"
+                    data-username="{{ post.author.username }}">
+
+                    Follow
+
+                </button>
+
+                {% endif %}
+
+            </div>
+
+            <!-- POST IMAGE -->
+
+            {% if post.image %}
+
+            <div class="image-frame">
+
+                <img
+                    src="{{ post.image.url }}"
+                    class="post-media"
+                    alt="Post">
+
+            </div>
+
+            {% endif %}
+
+            <!-- CAPTION -->
+
+            <div
+                class="caption-container-box"
+                id="caption-container-{{ post.id }}">
+
+                {% if post.content %}
+
+                <p
+                    class="post-caption-text"
+                    id="caption-text-{{ post.id }}">
+
+                    {{ post.content }}
+
+                </p>
+
+                {% endif %}
+
+            </div>
+
+            <!-- LIKE / COMMENT COUNT -->
+
+            <div class="metrics-row">
+
+                <span id="likes-count-{{ post.id }}">
+
+                    👍 {{ post.likes.count }} Likes
+
+                </span>
+
+                <span
+                    id="comments-count-{{ post.id }}"
+                    class="comment-toggle-btn"
+                    data-post-id="{{ post.id }}"
+                    style="cursor:pointer;">
+
+                    {{ post.comments.count }} Comments
+
+                </span>
+
+            </div>
+
+            <hr>
+
+            <!-- ACTION BAR -->
+
+            <div class="action-bar">
+
+                <button
+                    type="button"
+                    class="action-btn like-btn"
+                    data-post-id="{{ post.id }}"
+                    style="color:{% if request.user in post.likes.all %}#1877f2{% else %}#65676b{% endif %};">
+
+                    👍
+
+                    <span class="like-text">
+
+                        {% if request.user in post.likes.all %}
+
+                            Liked
+
+                        {% else %}
+
+                            Like
+
+                        {% endif %}
+
+                    </span>
+
+                </button>
+
+                <button
+                    type="button"
+                    class="action-btn comment-toggle-btn"
+                    data-post-id="{{ post.id }}">
+
+                    💬 Comment
+
+                </button>
+
+                {% if request.user == post.author %}
+
+                <button
+                    type="button"
+                    class="action-btn edit-post-btn"
+                    data-post-id="{{ post.id }}">
+
+                    ✏️ Edit
+
+                </button>
+
+                <button
+                    type="button"
+                    class="action-btn delete-post-btn"
+                    data-post-id="{{ post.id }}">
+
+                    🗑 Delete
+
+                </button>
+
+                {% endif %}
+
+            </div>
+
+            <!-- COMMENT POPUP -->
+
+            <div
+                id="comment-box-{{ post.id }}"
+                class="comment-popup"
+                style="display:none;">
+
+                <div class="popup-content">
+
+                    <div class="popup-header">
+
+                        <h3>Comments</h3>
+
+                        <button
+                            type="button"
+                            class="close-comment-popup"
+                            data-post-id="{{ post.id }}">
+
+                            ×
+
+                        </button>
+
+                    </div>
+
+                    <div
+                        class="popup-comments"
+                        id="comments-list-{{ post.id }}">
