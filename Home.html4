@@ -1,0 +1,43 @@
+                <img
+                    id="story-preview-image"
+                    src="#"
+                    alt="Story Preview"
+                    style="display:none;width:100%;max-height:300px;object-fit:cover;border-radius:8px;">
+
+                </div>
+
+                <input
+                    type="text"
+                    name="caption"
+                    placeholder="Write a caption (optional)"
+                    autocomplete="off">
+
+            </div>
+
+            <div class="popup-footer">
+
+                <button
+                    type="submit"
+                    class="post-btn">
+
+                    Share Story
+
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+
+<script src="{% static 'js/home.js' %}"></script>
+
+<script src="{% static 'js/story.js' %}"></script>
+
+{% endblock %}
