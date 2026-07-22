@@ -1,0 +1,114 @@
+<div class="caption-container-box" id="caption-container-{{ post.id }}">
+                {% if post.content %}
+                <p class="post-caption-text" id="caption-text-{{ post.id }}" style="padding-top: 4px;">
+                    {{ post.content }}
+                </p>
+                {% endif %}
+            </div>
+
+            <div class="metrics-row">
+                <span id="likes-count-{{ post.id }}">
+                    👍 {{ post.likes.count }} Likes
+                </span>
+                <span id="comments-count-{{ post.id }}" class="comment-toggle-btn" data-post-id="{{ post.id }}" style="cursor:pointer;">
+                    {{ post.comments.count }} Comments
+                </span>
+            </div>
+
+            <hr>
+
+            <div class="action-bar">
+                <button
+                    type="button"
+                    class="action-btn like-btn"
+                    data-post-id="{{ post.id }}"
+                    style="color:{% if request.user in post.likes.all %}#1877f2{% else %}#65676b{% endif %};">
+                    👍 <span class="like-text">{% if request.user in post.likes.all %}Liked{% else %}Like{% endif %}</span>
+                </button>
+
+                <button type="button" class="action-btn comment-toggle-btn" data-post-id="{{ post.id }}">
+                    💬 Comment
+                </button>
+
+                {% if request.user == post.author %}
+                <button type="button" class="action-btn edit-post-btn" data-post-id="{{ post.id }}">
+                    ✏️ Edit
+                </button>
+                <button type="button" class="action-btn delete-post-btn" data-post-id="{{ post.id }}">
+                    🗑 Delete
+                </button>
+                {% endif %}
+            </div>
+
+            <!-- SLIDING MODAL CONTAINER FOR DISCUSSION THREADS -->
+            <div id="comment-box-{{ post.id }}" class="comment-popup" style="display: none;">
+                <div class="popup-content">
+                    
+                    <div class="popup-header">
+                        <h3>Comments</h3>
+                        <button type="button" class="close-comment-popup" data-post-id="{{ post.id }}">×</button>
+                    </div>
+
+                    <!-- Target Scroll Container for Dynamic Injections -->
+                    <div class="popup-comments" id="comments-list-{{ post.id }}">
+                        {% for comment in post.comments.all %}
+                            {% if not comment.parent %}
+                                {% include "posts/reply.html" with comment=comment post=post %}
+                            {% endif %}
+                        {% empty %}
+                            <p class="no-comments-fallback">No comments yet.</p>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Root Direct Comment Posting Form Box -->
+                    <div class="popup-footer">
+                        <form class="comment-form" action="{% url 'posts:add_comment' post.id %}" method="POST" data-post-id="{{ post.id }}">
+                            {% csrf_token %}
+                            <input type="text" name="text" placeholder="Write a comment..." required autocomplete="off">
+                            <button type="submit">Post</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </main>
+</div>
+
+<!-- ================= CREATE STORY POPUP MODAL ================= -->
+<div id="story-popup-modal" class="comment-popup" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); align-items: center; justify-content: center;">
+    <div class="popup-content" style="background-color: #fff; border-radius: 8px; max-width: 500px; width: 90%; margin: 10% auto; box-shadow: 0 4px 12px rgba(0,0,0,0.15); border: 1px solid #ced0d4; overflow: hidden;">
+        
+        <div class="popup-header" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 20px; border-bottom: 1px solid #e4e6eb;">
+            <h3 style="margin: 0; font-size: 18px; font-weight: 700;">Create a Story</h3>
+            <button type="button" id="close-story-popup" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #65676b; line-height: 1;">&times;</button>
+        </div>
+
+        <form id="ajax-story-form" action="{% url 'stories:ajax_story_create' %}" method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="popup-comments" style="padding: 20px; display: flex; flex-direction: column; gap: 15px;">
+                
+                <label for="story-image-input" style="cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 2px dashed #ced0d4; border-radius: 8px; padding: 30px 10px; background: #f7f8fa; text-align: center;">
+                    <span style="font-size: 32px; margin-bottom: 8px; user-select: none;">📸</span>
+                    <span style="font-weight: 600; color: #1877f2; font-size: 14px;">Upload a Photo</span>
+                    <span style="font-size: 12px; color: #65676b; margin-top: 4px;">Select story image asset file</span>
+                    <input type="file" id="story-image-input" name="image" accept="image/*" required hidden>
+                </label>
+
+                <div id="story-preview-box" style="display: none; border-radius: 8px; overflow: hidden; max-height: 200px; border: 1px solid #ced0d4; text-align: center; background: #000;">
+                    <img id="story-preview-image" src="#" style="max-width: 100%; max-height: 200px; object-fit: contain; display: inline-block;" alt="Live input trace data attachment preview">
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 6px;">
+                    <label style="font-size: 13px; font-weight: 600; color: #65676b;">Add a Caption (Optional)</label>
+                    <input type="text" name="caption" placeholder="Type something nice..." autocomplete="off" style="width: 100%; padding: 10px 12px; border: 1px solid #ced0d4; border-radius: 6px; font-size: 14px; outline: none; box-sizing: border-box;">
+                </div>
+            </div>
+
+            <div class="popup-footer" style="padding: 12px 20px; background: #f0f2f5; display: flex; justify-content: flex-end; border-top: 1px solid #e4e6eb; gap: 10px;">
+                <button type="submit" class="post-btn" style="padding: 8px 24px; font-weight: 600; background: #1877f2; color: #fff; border: none; border-radius: 6px; cursor: pointer;">Share Story</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
