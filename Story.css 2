@@ -1,0 +1,174 @@
+/* =====================================================
+   STORY.CSS (PART 2/2)
+   Header • Footer • Caption • Responsive
+===================================================== */
+
+/* ==========================
+   Story Header
+========================== */
+
+.story-top{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+
+.story-user{
+    display:flex;
+    align-items:center;
+    gap:10px;
+}
+
+.story-user-img-wrapper{
+    width:42px;
+    height:42px;
+    border-radius:50%;
+    padding:2px;
+    background:linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888);
+}
+
+.story-user-img{
+    width:100%;
+    height:100%;
+    border-radius:50%;
+    object-fit:cover;
+    border:2px solid #000;
+}
+
+.story-user-placeholder{
+    width:100%;
+    height:100%;
+    border-radius:50%;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    background:#fff;
+    font-size:20px;
+}
+
+.story-user h4{
+    color:#fff;
+    font-size:15px;
+    font-weight:600;
+}
+
+.story-user small{
+    font-size:12px;
+    color:#ddd;
+    margin-left:5px;
+}
+
+.close-story{
+    color:#fff;
+    text-decoration:none;
+    font-size:28px;
+    font-weight:bold;
+    line-height:1;
+}
+
+/* ==========================
+   Caption
+========================== */
+
+.story-caption{
+    position:absolute;
+    bottom:80px;
+    left:20px;
+    right:20px;
+    color:#fff;
+    background:rgba(0,0,0,.35);
+    padding:12px 16px;
+    border-radius:12px;
+    font-size:15px;
+    line-height:1.5;
+    word-break:break-word;
+}
+
+/* ==========================
+   Footer
+========================== */
+
+.story-bottom{
+    position:absolute;
+    bottom:15px;
+    left:20px;
+    right:20px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    color:#fff;
+    font-size:14px;
+}
+
+.delete-story-btn{
+    border:none;
+    background:#e41e3f;
+    color:#fff;
+    padding:8px 16px;
+    border-radius:6px;
+    cursor:pointer;
+    font-size:14px;
+    font-weight:600;
+    transition:.2s;
+}
+
+.delete-story-btn:hover{
+    background:#c81d38;
+}
+
+/* ==========================
+   Animation
+========================== */
+
+.story-card{
+    animation:storyOpen .25s ease;
+}
+
+@keyframes storyOpen{
+    from{
+        transform:scale(.96);
+        opacity:0;
+    }
+    to{
+        transform:scale(1);
+        opacity:1;
+    }
+}
+
+/* ==========================
+   Responsive
+========================== */
+
+@media(max-width:768px){
+
+    .story-card{
+        width:100%;
+        height:100vh;
+        border-radius:0;
+    }
+
+    .story-header-wrapper{
+        padding:10px;
+    }
+
+    .story-user-img-wrapper{
+        width:38px;
+        height:38px;
+    }
+
+    .story-caption{
+        left:12px;
+        right:12px;
+        bottom:70px;
+        font-size:14px;
+    }
+
+    .story-bottom{
+        left:12px;
+        right:12px;
+    }
+
+    .close-story{
+        font-size:26px;
+    }
+}
