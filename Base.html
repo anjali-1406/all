@@ -1,0 +1,113 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <!-- Favicon -->
+    <link rel="shortcut icon" href="data:image/x-icon;," type="image/x-icon">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Facebook Clone</title>
+
+    <!-- Global CSS -->
+    <link rel="stylesheet" href="{% static 'css/navbar.css' %}">
+    <link rel="stylesheet" href="{% static 'css/layout.css' %}">
+    <link rel="stylesheet" href="{% static 'css/post.css' %}">
+    <link rel="stylesheet" href="{% static 'css/notification.css' %}">
+
+    <!-- Page Specific CSS -->
+    {% block extra_css %}
+    {% endblock %}
+
+</head>
+
+<body>
+
+{% csrf_token %}
+
+<nav class="navbar">
+
+    <div class="nav-left">
+
+        <h2 class="logo">facebook</h2>
+
+        <input
+            type="text"
+            placeholder="Search Facebook"
+            class="search-box">
+
+    </div>
+
+    <div class="nav-center">
+
+        <a href="{% url 'posts:home_feed' %}" class="nav-link">
+            🏠 Home
+        </a>
+
+        <a href="{% url 'notifications:notification_list' %}"
+           class="nav-link notification-link">
+
+            🔔 Notification
+
+            <span
+                id="notification-badge"
+                class="notification-badge"
+                style="display:none;">
+            </span>
+
+        </a>
+
+    </div>
+
+    <div class="nav-right">
+
+        {% if request.user.is_authenticated %}
+
+            <a href="{% url 'profiles:profile' username=request.user.username %}"
+               class="profile-link">
+
+                {{ request.user.username }}
+
+            </a>
+
+            <form
+                action="{% url 'account_logout' %}"
+                method="post"
+                style="display:inline;">
+
+                {% csrf_token %}
+
+                <button class="logout-btn">
+                    Logout
+                </button>
+
+            </form>
+
+        {% else %}
+
+            <a href="{% url 'account_login' %}" class="nav-link">
+                Login
+            </a>
+
+        {% endif %}
+
+    </div>
+
+</nav>
+
+{% block content %}
+{% endblock %}
+
+<!-- Global JS -->
+<script src="{% static 'js/home.js' %}?v=3.0"></script>
+<script src="{% static 'js/story.js' %}?v=3.0"></script>
+<script src="{% static 'js/notification.js' %}?v=3.0"></script>
+
+<!-- Page Specific JS -->
+{% block extra_js %}
+{% endblock %}
+
+</body>
+</html>
