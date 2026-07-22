@@ -1,0 +1,236 @@
+/* =====================================================
+   HOME.CSS (PART 4/4)
+   Replies • Story Popup • Responsive
+===================================================== */
+
+/* ===========================
+   Comments
+=========================== */
+
+.comment-container{
+    display:flex;
+    align-items:flex-start;
+    gap:10px;
+    margin-bottom:18px;
+}
+
+.comment-avatar{
+    width:38px;
+    height:38px;
+    border-radius:50%;
+    overflow:hidden;
+    background:#e4e6eb;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    flex-shrink:0;
+}
+
+.comment-avatar img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+}
+
+.comment-right{
+    flex:1;
+}
+
+.comment-bubble{
+    background:#f0f2f5;
+    padding:10px 14px;
+    border-radius:18px;
+    display:inline-block;
+    max-width:100%;
+}
+
+.comment-user{
+    display:block;
+    font-size:13px;
+    font-weight:700;
+    margin-bottom:4px;
+}
+
+.comment-text{
+    font-size:15px;
+    line-height:1.5;
+    word-break:break-word;
+}
+
+/* ===========================
+   Comment Actions
+=========================== */
+
+.comment-actions{
+    display:flex;
+    gap:16px;
+    margin-top:6px;
+    margin-left:10px;
+    align-items:center;
+}
+
+.comment-actions button{
+    border:none;
+    background:none;
+    cursor:pointer;
+    color:#65676b;
+    font-size:13px;
+    font-weight:600;
+}
+
+.comment-actions button:hover{
+    text-decoration:underline;
+}
+
+.comment-time{
+    font-size:12px;
+    color:#65676b;
+}
+
+/* ===========================
+   Reply Section
+=========================== */
+
+.reply-list{
+    margin-left:46px;
+    border-left:2px solid #e4e6eb;
+    padding-left:15px;
+    margin-top:10px;
+}
+
+.reply-form{
+    display:none;
+    gap:10px;
+    margin-top:10px;
+    margin-left:46px;
+}
+
+.reply-form input{
+    flex:1;
+    border:none;
+    outline:none;
+    background:#f0f2f5;
+    border-radius:20px;
+    padding:10px 14px;
+}
+
+.reply-form button{
+    border:none;
+    background:#1877f2;
+    color:#fff;
+    padding:9px 18px;
+    border-radius:20px;
+    cursor:pointer;
+    font-weight:600;
+}
+
+.reply-form button:hover{
+    background:#166fe5;
+}
+
+/* ===========================
+   Story Popup
+=========================== */
+
+#story-popup-modal .popup-content{
+    max-width:500px;
+}
+
+#story-preview-box{
+    display:none;
+    margin-top:15px;
+}
+
+#story-preview-image{
+    width:100%;
+    max-height:320px;
+    object-fit:contain;
+    border-radius:10px;
+}
+
+/* ===========================
+   Delete Account
+=========================== */
+
+.delete-account-btn{
+    width:100%;
+    border:none;
+    background:#e41e3f;
+    color:#fff;
+    padding:12px;
+    border-radius:8px;
+    cursor:pointer;
+    font-size:15px;
+    font-weight:600;
+    transition:.2s;
+}
+
+.delete-account-btn:hover{
+    background:#c91d39;
+}
+
+/* ===========================
+   Responsive
+=========================== */
+
+@media (max-width:768px){
+
+    .main-layout{
+        display:block;
+    }
+
+    .left-sidebar,
+    .right-sidebar{
+        display:none;
+    }
+
+    .feed-container{
+        width:100%;
+        max-width:100%;
+        padding:10px;
+    }
+
+    .stories-container{
+        gap:12px;
+        padding:12px;
+    }
+
+    .story-item{
+        width:65px;
+    }
+
+    .story-circle{
+        width:60px;
+        height:60px;
+    }
+
+    .popup-content{
+        width:100%;
+        height:100vh;
+        border-radius:0;
+    }
+
+    .post-media{
+        max-height:450px;
+    }
+
+    .create-input{
+        font-size:15px;
+    }
+}
+
+/* ===========================
+   Utilities
+=========================== */
+
+.hidden{
+    display:none !important;
+}
+
+.show-flex{
+    display:flex !important;
+}
+
+.show-block{
+    display:block !important;
+}
