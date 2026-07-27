@@ -1,0 +1,111 @@
+from django.contrib.auth import login, logout
+
+from rest_framework import permissions, status
+from rest_framework.generics import GenericAPIView
+from rest_framework.response import Response
+
+from .serializers import (
+    RegisterSerializer,
+    LoginSerializer,
+    UserSerializer,
+)
+
+
+class RegisterAPIView(GenericAPIView):
+
+    serializer_class = RegisterSerializer
+
+    permission_classes = [
+        permissions.AllowAny,
+    ]
+
+    def post(self, request):
+
+        serializer = self.get_serializer(
+            data=request.data
+        )
+
+        serializer.is_valid(
+            raise_exception=True
+        )
+
+        user = serializer.save()
+
+        return Response(
+            {
+                "message":
+                "Registration successful.",
+
+                "user":
+                UserSerializer(user).data,
+            },
+            status=status.HTTP_201_CREATED,
+        )
+
+
+class LoginAPIView(GenericAPIView):
+
+    serializer_class = LoginSerializer
+
+    permission_classes = [
+        permissions.AllowAny,
+    ]
+
+    def post(self, request):
+
+        serializer = self.get_serializer(
+            data=request.data
+        )
+
+        serializer.is_valid(
+            raise_exception=True
+        )
+
+        user = serializer.validated_data["user"]
+
+        login(request, user)
+
+        return Response(
+            {
+                "message":
+                "Login successful.",
+
+                "user":
+                UserSerializer(user).data,
+            }
+        )
+
+
+class LogoutAPIView(GenericAPIView):
+
+    permission_classes = [
+        permissions.IsAuthenticated,
+    ]
+
+    def post(self, request):
+
+        logout(request)
+
+        return Response(
+            {
+                "message":
+                "Logout successful."
+            }
+        )
+
+
+class ProfileAPIView(GenericAPIView):
+
+    permission_classes = [
+        permissions.IsAuthenticated,
+    ]
+
+    serializer_class = UserSerializer
+
+    def get(self, request):
+
+        serializer = self.get_serializer(
+            request.user
+        )
+
+        return Response(serializer.data)
