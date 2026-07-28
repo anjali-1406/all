@@ -1,0 +1,98 @@
+from rest_framework import serializers
+
+from apps.posts.models import Post
+
+
+class PostSerializer(serializers.ModelSerializer):
+
+    author = serializers.CharField(
+        source="author.username",
+        read_only=True,
+    )
+
+    total_likes = serializers.ReadOnlyField()
+
+    total_comments = serializers.SerializerMethodField()
+
+    is_liked = serializers.SerializerMethodField()
+
+    class Meta:
+
+        model = Post
+
+        fields = [
+            "id",
+            "author",
+            "content",
+            "image",
+            "total_likes",
+            "total_comments",
+            "is_liked",
+            "created_at",
+            "updated_at",
+        ]
+
+        read_only_fields = [
+            "id",
+            "author",
+            "total_likes",
+            "total_comments",
+            "is_liked",
+            "created_at",
+            "updated_at",
+        ]
+
+    def get_total_comments(self, obj):
+        # Uses len() to read from prefetch_related and avoid extra SQL queries
+        return len(obj.comments.all())
+
+    def get_is_liked(self, obj):
+
+        request = self.context.get("request")
+
+        if (
+            request
+            and
+            request.user.is_authenticated
+        ):
+
+            return obj.likes.filter(
+                id=request.user.id
+            ).exists()
+
+        return False
+
+    def validate(self, attrs):
+
+        content = attrs.get("content")
+        image = attrs.get("image")
+
+        if not content and not image:
+
+            raise serializers.ValidationError(
+                {
+                    "detail":
+                    "Either content or image is required."
+                }
+            )
+
+        return attrs
+
+    def create(self, validated_data):
+       
+        return Post.objects.create(**validated_data)
+
+    def update(self, instance, validated_data):
+
+        instance.content = validated_data.get(
+            "content",
+            instance.content,
+        )
+
+        if validated_data.get("image"):
+
+            instance.image = validated_data["image"]
+
+        instance.save()
+
+        return instance
