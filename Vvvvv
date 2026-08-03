@@ -1,0 +1,157 @@
+from django.contrib.auth import get_user_model
+from django.db import transaction
+from django.shortcuts import get_object_or_404
+
+from rest_framework import permissions, status
+from rest_framework.decorators import action
+from rest_framework.pagination import PageNumberPagination
+from rest_framework.response import Response
+from rest_framework.viewsets import ModelViewSet
+
+from apps.follows.models import Follow
+from apps.notification.models import Notification
+
+from .serializers import FollowSerializer
+
+User = get_user_model()
+
+
+class FollowPagination(PageNumberPagination):
+
+    page_size = 10
+    page_size_query_param = "page_size"
+    max_page_size = 100
+
+
+class FollowViewSet(ModelViewSet):
+
+    serializer_class = FollowSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    pagination_class = FollowPagination
+    http_method_names = ["get", "post", "delete"]
+
+    def get_queryset(self):
+        return Follow.objects.select_related(
+            "follower",
+            "following",
+        )
+
+    @action(
+        detail=False,
+        methods=["post"],
+        url_path="toggle-follow/(?P<user_id>[^/.]+)",
+    )
+    def toggle_follow(self, request, user_id=None):
+
+        user = get_object_or_404(User, pk=user_id)
+
+        if user == request.user:
+            return Response(
+                {
+                    "detail": "You cannot follow yourself."
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        follow = Follow.objects.filter(
+            follower=request.user,
+            following=user,
+        ).first()
+
+        if follow:
+
+            with transaction.atomic():
+
+                follow.delete()
+
+                Notification.objects.filter(
+                    sender=request.user,
+                    receiver=user,
+                    notification_type=Notification.FOLLOW,
+                ).delete()
+
+            return Response(
+                {
+                    "following": False,
+                    "message": "User unfollowed."
+                }
+            )
+
+        with transaction.atomic():
+
+            Follow.objects.create(
+                follower=request.user,
+                following=user,
+            )
+
+            Notification.objects.get_or_create(
+                sender=request.user,
+                receiver=user,
+                notification_type=Notification.FOLLOW,
+            )
+
+        return Response(
+            {
+                "following": True,
+                "message": "User followed."
+            },
+            status=status.HTTP_201_CREATED,
+        )
+
+    @action(
+        detail=False,
+        methods=["get"],
+        url_path="followers/(?P<user_id>[^/.]+)",
+    )
+    def followers(self, request, user_id=None):
+
+        queryset = self.get_queryset().filter(
+            following_id=user_id
+        )
+
+        page = self.paginate_queryset(queryset)
+
+        if page is not None:
+            serializer = self.get_serializer(
+                page,
+                many=True,
+            )
+            return self.get_paginated_response(
+                serializer.data
+            )
+
+        serializer = self.get_serializer(
+            queryset,
+            many=True,
+        )
+
+        return Response(serializer.data)
+
+    @action(
+        detail=False,
+        methods=["get"],
+        url_path="following/(?P<user_id>[^/.]+)",
+    )
+    def following(self, request, user_id=None):
+
+        queryset = self.get_queryset().filter(
+            follower_id=user_id
+        )
+
+        page = self.paginate_queryset(queryset)
+
+        if page is not None:
+            serializer = self.get_serializer(
+                page,
+                many=True,
+            )
+            return self.get_paginated_response(
+                serializer.data
+            )
+
+        serializer = self.get_serializer(
+            queryset,
+            many=True,
+        )
+
+        return Response(serializer.data)
