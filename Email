@@ -1,0 +1,46 @@
+from celery import shared_task
+from django.conf import settings
+from django.contrib.auth import get_user_model
+from django.core.mail import send_mail
+from django.utils import timezone
+
+User = get_user_model()
+
+
+@shared_task(
+    bind=True,
+    autoretry_for=(Exception,),
+    retry_backoff=True,
+    retry_backoff_max=600,
+    retry_kwargs={"max_retries": 3},
+)
+def send_birthday_emails(self):
+    today = timezone.localdate()
+
+    users = User.objects.filter(
+        birth_date__month=today.month,
+        birth_date__day=today.day,
+    )
+
+    user_count = users.count()
+
+    for user in users:
+        subject = "Happy Birthday!"
+        message = (
+            f"Hi {user.username},\n\n"
+            "Happy Birthday!\n"
+            "Wishing you happiness, success, and good health.\n"
+            "Have a wonderful day!\n\n"
+            "Best Regards,\n"
+            "Social Media Team"
+        )
+
+        send_mail(
+            subject=subject,
+            message=message,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[user.email],
+            fail_silently=False,
+        )
+
+    return f"Birthday emails sent to {user_count} users."
