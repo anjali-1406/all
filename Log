@@ -1,0 +1,164 @@
+LOG_DIR = BASE_DIR / "logs"
+
+LOG_DIR.mkdir(exist_ok=True)
+
+
+LOGGING = {
+    "version": 1,
+
+    "disable_existing_loggers": False,
+
+    "formatters": {
+
+        "verbose": {
+            "format": (
+                "{asctime} | {levelname} | "
+                "{name} | {message}"
+            ),
+            "style": "{",
+        },
+
+        "api": {
+            "format": (
+                "{asctime} | {levelname} | "
+                "{name} | {message}"
+            ),
+            "style": "{",
+        },
+
+    },
+
+    "handlers": {
+
+        # -------------------------
+        # Console
+        # -------------------------
+
+        "console": {
+            "class": "logging.StreamHandler",
+            "formatter": "verbose",
+        },
+
+        # -------------------------
+        # General Django Logs
+        # -------------------------
+
+        "django_file": {
+            "class": "logging.handlers.RotatingFileHandler",
+            "filename": LOG_DIR / "django.log",
+            "maxBytes": 5 * 1024 * 1024,
+            "backupCount": 5,
+            "formatter": "verbose",
+            "encoding": "utf-8",
+        },
+
+        # -------------------------
+        # API Logs
+        # -------------------------
+
+        "api_file": {
+            "class": "logging.handlers.RotatingFileHandler",
+            "filename": LOG_DIR / "api.log",
+            "maxBytes": 5 * 1024 * 1024,
+            "backupCount": 5,
+            "formatter": "api",
+            "encoding": "utf-8",
+        },
+
+        # -------------------------
+        # Error Logs
+        # -------------------------
+
+        "error_file": {
+            "class": "logging.handlers.RotatingFileHandler",
+            "filename": LOG_DIR / "error.log",
+            "maxBytes": 5 * 1024 * 1024,
+            "backupCount": 5,
+            "formatter": "verbose",
+            "encoding": "utf-8",
+        },
+
+        # -------------------------
+        # Security Logs
+        # -------------------------
+
+        "security_file": {
+            "class": "logging.handlers.RotatingFileHandler",
+            "filename": LOG_DIR / "security.log",
+            "maxBytes": 5 * 1024 * 1024,
+            "backupCount": 5,
+            "formatter": "verbose",
+            "encoding": "utf-8",
+        },
+
+    },
+
+    "loggers": {
+
+        # -------------------------
+        # Django
+        # -------------------------
+
+        "django": {
+            "handlers": [
+                "console",
+                "django_file",
+            ],
+            "level": "INFO",
+            "propagate": False,
+        },
+
+        # -------------------------
+        # Django Errors
+        # -------------------------
+
+        "django.request": {
+            "handlers": [
+                "console",
+                "error_file",
+            ],
+            "level": "ERROR",
+            "propagate": False,
+        },
+
+        # -------------------------
+        # API
+        # -------------------------
+
+        "apps": {
+            "handlers": [
+                "console",
+                "api_file",
+            ],
+            "level": "INFO",
+            "propagate": False,
+        },
+
+        # -------------------------
+        # Security
+        # -------------------------
+
+        "security": {
+            "handlers": [
+                "console",
+                "security_file",
+            ],
+            "level": "WARNING",
+            "propagate": False,
+        },
+
+        # -------------------------
+        # Allauth
+        # -------------------------
+
+        "allauth": {
+            "handlers": [
+                "console",
+                "django_file",
+            ],
+            "level": "INFO",
+            "propagate": False,
+        },
+
+    },
+}
