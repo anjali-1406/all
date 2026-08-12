@@ -1,0 +1,548 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+
+<link rel="stylesheet" href="{% static 'css/edit_profile.css' %}">
+<link rel="stylesheet" href="{% static 'css/home.css' %}">
+
+<style>
+    .verified-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 21px;
+        height: 21px;
+        margin-left: 6px;
+        border-radius: 50%;
+        background: #1877f2;
+        color: white;
+        font-size: 13px;
+        font-weight: bold;
+        vertical-align: middle;
+    }
+
+    .verified-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        margin-left: 8px;
+        padding: 8px 14px;
+        border-radius: 6px;
+        background: #1877f2;
+        color: white;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 14px;
+    }
+
+    .verified-btn:hover {
+        background: #166fe5;
+        color: white;
+        text-decoration: none;
+    }
+</style>
+
+
+<div class="fb-timeline-wrapper">
+
+
+    <!-- ================= PROFILE CARD ================= -->
+
+    <div class="fb-top-profile-card">
+
+
+        <!-- PROFILE PICTURE -->
+
+        <div class="fb-avatar-wrapper">
+
+            {% if profile_user.profile.profile_picture %}
+
+                <img
+                    src="{{ profile_user.profile.profile_picture.url }}"
+                    alt="{{ profile_user.username }}"
+                >
+
+            {% else %}
+
+                <div class="fb-avatar-placeholder">
+                    👤
+                </div>
+
+            {% endif %}
+
+        </div>
+
+
+        <!-- USERNAME + VERIFIED BADGE -->
+
+        <h2 class="fb-profile-name">
+
+            {{ profile_user.username }}
+
+            {% if profile_user.profile.is_verified %}
+
+                <span
+                    class="verified-badge"
+                    title="Verified"
+                >
+                    ✓
+                </span>
+
+            {% endif %}
+
+        </h2>
+
+
+        <!-- JOINED DATE -->
+
+        <p class="fb-profile-meta">
+
+            Joined {{ profile_user.date_joined|date:"F Y" }}
+
+        </p>
+
+
+        <!-- ================= PROFILE STATS ================= -->
+
+        <div
+            class="fb-profile-stats-counters-row"
+            style="
+                display: flex;
+                gap: 30px;
+                margin: 5px 0 18px 0;
+                font-size: 15px;
+                color: #050505;
+            "
+        >
+
+            <div>
+
+                <strong>
+                    {{ profile_user.posts.count }}
+                </strong>
+
+                posts
+
+            </div>
+
+
+            <div>
+
+                <strong>
+                    {{ profile_user.followers.count|default:"0" }}
+                </strong>
+
+                followers
+
+            </div>
+
+
+            <div>
+
+                <strong>
+                    {{ profile_user.following.count|default:"0" }}
+                </strong>
+
+                following
+
+            </div>
+
+        </div>
+
+
+        <!-- ================= LOCATION / WEBSITE ================= -->
+
+        <div class="fb-meta-info-row">
+
+
+            {% if profile_user.profile.location %}
+
+                <span>
+
+                    📍 Lives in
+
+                    <strong>
+                        {{ profile_user.profile.location }}
+                    </strong>
+
+                </span>
+
+            {% endif %}
+
+
+            {% if profile_user.profile.website %}
+
+                <span>
+
+                    🔗
+
+                    <a
+                        href="{{ profile_user.profile.website }}"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >
+                        {{ profile_user.profile.website }}
+                    </a>
+
+                </span>
+
+            {% endif %}
+
+
+        </div>
+
+
+        <!-- ================= BIO ================= -->
+
+        <div class="fb-profile-bio-box">
+
+
+            {% if profile_user.profile.bio %}
+
+                "{{ profile_user.profile.bio }}"
+
+            {% else %}
+
+                <span
+                    class="fb-empty-text"
+                    style="
+                        color: #65676b;
+                        font-style: italic;
+                    "
+                >
+                    No bio description written yet.
+                </span>
+
+            {% endif %}
+
+
+        </div>
+
+
+        <!-- ================= ACTION BUTTONS ================= -->
+
+        <div class="fb-profile-action-btn-wrapper">
+
+
+            {% if request.user == profile_user %}
+
+
+                <!-- EDIT PROFILE -->
+
+                <a
+                    href="{% url 'profiles:edit_profile' %}"
+                    class="fb-btn-cancel"
+                >
+                    ✏ Edit Profile
+                </a>
+
+
+                <!-- GET VERIFIED -->
+
+                {% if not profile_user.profile.is_verified %}
+
+                    <a
+                        href="{% url 'profiles:get_verified' %}"
+                        class="verified-btn"
+                    >
+                        🔵 Get Verified
+                    </a>
+
+                {% endif %}
+
+
+            {% else %}
+
+
+                <!-- FOLLOW BUTTON -->
+
+                <button
+                    class="follow-btn"
+                    data-username="{{ profile_user.username }}"
+                >
+
+                    {% if request.user in profile_user.followers.all %}
+
+                        Following
+
+                    {% else %}
+
+                        Follow
+
+                    {% endif %}
+
+                </button>
+
+
+            {% endif %}
+
+
+        </div>
+
+
+    </div>
+
+
+    <!-- ================= RECENT ACTIVITY ================= -->
+
+    <h3 class="fb-grid-section-title">
+
+        Recent Activity
+
+    </h3>
+
+
+    <div class="fb-three-column-grid">
+
+
+        {% for post in profile_user.posts.all %}
+
+
+            <!-- ================= POST ================= -->
+
+            <div
+                class="fb-grid-post-item"
+                data-post-id="{{ post.id }}"
+            >
+
+
+                {% if post.image %}
+
+
+                    <!-- IMAGE POST -->
+
+                    <div class="fb-grid-image-frame">
+
+
+                        <img
+                            src="{{ post.image.url }}"
+                            alt="Post Media Attachment"
+                        >
+
+
+                        <div
+                            class="fb-grid-overlay-caption comment-toggle-btn"
+                            data-post-id="{{ post.id }}"
+                        >
+
+
+                            <p>
+
+                                {{ post.content|default:"View Details"|truncatechars:50 }}
+
+                            </p>
+
+
+                            <span class="fb-grid-stat-icons">
+
+                                👍 {{ post.likes.count }}
+
+                                💬 {{ post.comments.count }}
+
+                            </span>
+
+
+                        </div>
+
+
+                    </div>
+
+
+                {% else %}
+
+
+                    <!-- TEXT POST -->
+
+                    <div
+                        class="fb-grid-text-frame comment-toggle-btn"
+                        data-post-id="{{ post.id }}"
+                    >
+
+
+                        <p class="fb-grid-fallback-text">
+
+                            {{ post.content|truncatechars:80 }}
+
+                        </p>
+
+
+                        <span
+                            class="fb-grid-stat-icons"
+                            style="color:#65676b;"
+                        >
+
+                            👍 {{ post.likes.count }}
+
+                            💬 {{ post.comments.count }}
+
+                        </span>
+
+
+                    </div>
+
+
+                {% endif %}
+
+
+                <!-- ================= COMMENT POPUP ================= -->
+
+                <div
+                    id="comment-box-{{ post.id }}"
+                    class="comment-popup"
+                >
+
+
+                    <div class="popup-content">
+
+
+                        <!-- POPUP HEADER -->
+
+                        <div class="popup-header">
+
+
+                            <h3>
+
+                                Comments
+
+                            </h3>
+
+
+                            <button
+                                type="button"
+                                class="close-comment-popup"
+                                data-post-id="{{ post.id }}"
+                            >
+
+                                ×
+
+                            </button>
+
+
+                        </div>
+
+
+                        <!-- COMMENTS -->
+
+                        <div class="popup-comments">
+
+
+                            {% for comment in post.comments.all %}
+
+
+                                {% if not comment.parent %}
+
+
+                                    {% include "posts/reply.html" with comment=comment post=post %}
+
+
+                                {% endif %}
+
+
+                            {% empty %}
+
+
+                                <p class="no-comments">
+
+                                    No comments yet.
+
+                                </p>
+
+
+                            {% endfor %}
+
+
+                        </div>
+
+
+                        <!-- ADD COMMENT -->
+
+                        <div class="popup-footer">
+
+
+                            <form
+                                class="comment-form"
+                                action="{% url 'posts:add_comment' post.id %}"
+                                data-post-id="{{ post.id }}"
+                            >
+
+
+                                {% csrf_token %}
+
+
+                                <input
+                                    id="comment-input-{{ post.id }}"
+                                    type="text"
+                                    name="text"
+                                    class="comment-input-field"
+                                    placeholder="Write a comment..."
+                                    required
+                                >
+
+
+                                <button
+                                    type="submit"
+                                    class="btn-primary"
+                                >
+
+                                    Send
+
+                                </button>
+
+
+                            </form>
+
+
+                        </div>
+
+
+                    </div>
+
+
+                </div>
+
+
+            </div>
+
+
+        {% empty %}
+
+
+            <!-- NO POSTS -->
+
+            <div class="fb-grid-empty-card">
+
+                <p>
+
+                    No posts shared yet.
+
+                </p>
+
+            </div>
+
+
+        {% endfor %}
+
+
+    </div>
+
+
+</div>
+
+
+{% endblock %}
+
+
+
+{% block extra_js %}
+
+<script>
+
+    const csrftoken = "{{ csrf_token }}";
+
+</script>
+
+
+<script src="{% static 'js/home.js' %}"></script>
+
+{% endblock %}
