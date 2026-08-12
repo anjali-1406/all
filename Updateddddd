@@ -1,0 +1,381 @@
+from django.conf import settings
+from django.contrib import messages
+from django.contrib.auth import get_user_model
+from django.contrib.auth.decorators import login_required
+from django.core.cache import cache
+from django.http import HttpResponse
+from django.shortcuts import get_object_or_404, redirect
+from django.urls import reverse
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_exempt
+from django.views.generic import DetailView, UpdateView
+
+import stripe
+
+from .forms import ProfileForm
+from .models import Profile
+
+
+User = get_user_model()
+
+stripe.api_key = settings.STRIPE_SECRET_KEY
+
+
+# =========================================================
+# PROFILE DETAIL
+# =========================================================
+
+@method_decorator(login_required, name="dispatch")
+class ProfileDetailView(DetailView):
+
+    model = Profile
+    template_name = "profiles/profile.html"
+    context_object_name = "profile"
+
+    def get_object(self, queryset=None):
+
+        profile_user = get_object_or_404(
+            User,
+            username=self.kwargs.get("username")
+        )
+
+        return get_object_or_404(
+            Profile,
+            user=profile_user
+        )
+
+    def get_context_data(self, **kwargs):
+
+        context = super().get_context_data(**kwargs)
+
+        context["profile_user"] = self.object.user
+
+        return context
+
+
+# =========================================================
+# PROFILE UPDATE
+# =========================================================
+
+@method_decorator(login_required, name="dispatch")
+class ProfileUpdateView(UpdateView):
+
+    model = Profile
+    form_class = ProfileForm
+    template_name = "profiles/edit_profile.html"
+    context_object_name = "form"
+
+    def get_object(self, queryset=None):
+
+        return get_object_or_404(
+            Profile,
+            user=self.request.user
+        )
+
+    def form_valid(self, form):
+
+        messages.success(
+            self.request,
+            "Your profile has been updated successfully!"
+        )
+
+        return super().form_valid(form)
+
+    def get_success_url(self):
+
+        return reverse(
+            "profiles:profile",
+            kwargs={
+                "username": self.request.user.username
+            }
+        )
+
+
+# =========================================================
+# STRIPE CHECKOUT
+# =========================================================
+
+@login_required
+def get_verified(request):
+
+    profile = get_object_or_404(
+        Profile,
+        user=request.user
+    )
+
+    # Already verified
+    if profile.is_verified:
+
+        messages.info(
+            request,
+            "Your profile is already verified."
+        )
+
+        return redirect(
+            "profiles:profile",
+            username=request.user.username
+        )
+
+    try:
+
+        session = stripe.checkout.Session.create(
+
+            mode="payment",
+
+            payment_method_types=["card"],
+
+            line_items=[
+                {
+                    "price_data": {
+                        "currency": "inr",
+
+                        "product_data": {
+                            "name": "Verified Badge",
+                            "description": (
+                                "Get a verified badge on your profile."
+                            ),
+                        },
+
+                        # ₹50 = 5000 paise
+                        "unit_amount": 5000,
+                    },
+
+                    "quantity": 1,
+                }
+            ],
+
+            success_url=request.build_absolute_uri(
+                reverse(
+                    "profiles:verification_success"
+                )
+            ) + "?session_id={CHECKOUT_SESSION_ID}",
+
+            cancel_url=request.build_absolute_uri(
+                reverse(
+                    "profiles:profile",
+                    kwargs={
+                        "username": request.user.username
+                    }
+                )
+            ),
+
+            # Store user ID in Stripe metadata
+            "metadata": {
+                "user_id": str(request.user.id),
+            },
+        )
+
+        return redirect(session.url)
+
+    except stripe.error.StripeError:
+
+        messages.error(
+            request,
+            "Unable to create Stripe payment session."
+        )
+
+        return redirect(
+            "profiles:profile",
+            username=request.user.username
+        )
+
+
+# =========================================================
+# STRIPE SUCCESS URL
+# =========================================================
+
+@login_required
+def verification_success(request):
+
+    profile = get_object_or_404(
+        Profile,
+        user=request.user
+    )
+
+    session_id = request.GET.get("session_id")
+
+    if not session_id:
+
+        messages.error(
+            request,
+            "Payment session was not found."
+        )
+
+        return redirect(
+            "profiles:profile",
+            username=request.user.username
+        )
+
+    try:
+
+        session = stripe.checkout.Session.retrieve(
+            session_id
+        )
+
+        if session.payment_status == "paid":
+
+            profile.is_verified = True
+
+            profile.save(
+                update_fields=["is_verified"]
+            )
+
+            messages.success(
+                request,
+                "Payment successful! Your profile is now verified."
+            )
+
+        else:
+
+            messages.warning(
+                request,
+                "Payment has not been completed yet."
+            )
+
+    except stripe.error.StripeError:
+
+        messages.error(
+            request,
+            "Unable to verify the payment with Stripe."
+        )
+
+    return redirect(
+        "profiles:profile",
+        username=request.user.username
+    )
+
+
+# =========================================================
+# STRIPE WEBHOOK
+# =========================================================
+
+@csrf_exempt
+def stripe_webhook(request):
+
+    # Stripe sends POST requests
+    if request.method != "POST":
+
+        return HttpResponse(
+            "Webhook endpoint",
+            status=200
+        )
+
+    payload = request.body
+
+    signature = request.META.get(
+        "HTTP_STRIPE_SIGNATURE"
+    )
+
+    webhook_secret = settings.STRIPE_WEBHOOK_SECRET
+
+    # Signature missing
+    if not signature:
+
+        return HttpResponse(
+            "Missing Stripe signature",
+            status=400
+        )
+
+    # -----------------------------------------------------
+    # VERIFY STRIPE WEBHOOK SIGNATURE
+    # -----------------------------------------------------
+
+    try:
+
+        event = stripe.Webhook.construct_event(
+            payload,
+            signature,
+            webhook_secret
+        )
+
+    except ValueError:
+
+        # Invalid JSON / payload
+        return HttpResponse(
+            "Invalid payload",
+            status=400
+        )
+
+    except stripe.error.SignatureVerificationError:
+
+        # Request did not come from Stripe
+        return HttpResponse(
+            "Invalid signature",
+            status=400
+        )
+
+    # -----------------------------------------------------
+    # IDEMPOTENCY
+    # -----------------------------------------------------
+
+    event_id = event["id"]
+
+    cache_key = f"stripe_event_{event_id}"
+
+    # Same Stripe event already processed
+    if cache.get(cache_key):
+
+        return HttpResponse(
+            "Event already processed",
+            status=200
+        )
+
+    # -----------------------------------------------------
+    # CHECKOUT SESSION COMPLETED
+    # -----------------------------------------------------
+
+    if event["type"] == "checkout.session.completed":
+
+        session = event["data"]["object"]
+
+        # StripeObject supports attribute access
+        payment_status = session.payment_status
+
+        if payment_status == "paid":
+
+            # Metadata added when Checkout Session
+            # was created
+            metadata = session.metadata
+
+            user_id = metadata.get(
+                "user_id"
+            )
+
+            if user_id:
+
+                try:
+
+                    profile = Profile.objects.get(
+                        user_id=user_id
+                    )
+
+                    # Idempotent database update
+                    if not profile.is_verified:
+
+                        profile.is_verified = True
+
+                        profile.save(
+                            update_fields=["is_verified"]
+                        )
+
+                except Profile.DoesNotExist:
+
+                    return HttpResponse(
+                        "Profile not found",
+                        status=404
+                    )
+
+    # -----------------------------------------------------
+    # MARK EVENT AS PROCESSED
+    # -----------------------------------------------------
+
+    cache.set(
+        cache_key,
+        True,
+        timeout=60 * 60 * 24
+    )
+
+    return HttpResponse(
+        "Webhook received",
+        status=200
+    )
