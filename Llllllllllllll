@@ -1,0 +1,45 @@
+from django.urls import path
+
+from . import views
+
+
+app_name = "profiles"
+
+
+urlpatterns = [
+
+    # Stripe Checkout
+    path(
+        "verify/",
+        views.get_verified,
+        name="get_verified"
+    ),
+
+    # Temporary success URL
+    path(
+        "verify/success/",
+        views.verification_success,
+        name="verification_success"
+    ),
+
+    # Stripe Webhook
+    path(
+        "verify/webhook/",
+        views.stripe_webhook,
+        name="stripe_webhook"
+    ),
+
+    # Edit Profile
+    path(
+        "edit/",
+        views.ProfileUpdateView.as_view(),
+        name="edit_profile"
+    ),
+
+    # Profile detail - keep LAST
+    path(
+        "<str:username>/",
+        views.ProfileDetailView.as_view(),
+        name="profile"
+    ),
+]
